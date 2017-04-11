@@ -1,0 +1,19 @@
+version: '2'
+
+services:
+  toitest:
+    build:
+      context: ./docker
+      args:
+        - INSTALL_SSH=true
+        - INSTALL_APACHE_PHP=true
+        - INSTALL_XDEBUG=true
+    extra_hosts:
+      # IMPORTANT: Replace with your Docker Host IP (will be appended to /etc/hosts)
+      - "dockerhost:10.0.75.1"
+    ports:
+      - "2222:22"
+      - "8080:80"
+    volumes:
+      - "./source:/var/www/html"
+    tty: true
