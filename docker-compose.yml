@@ -1,19 +1,29 @@
 version: '2'
 
 services:
-  toitest:
+  authen:
     build:
       context: ./docker
       args:
-        - INSTALL_SSH=true
+        - INSTALL_SSH=false
         - INSTALL_APACHE_PHP=true
         - INSTALL_XDEBUG=true
+    environment:
+      PHP_XDEBUG_ENABLED: 1
     extra_hosts:
       # IMPORTANT: Replace with your Docker Host IP (will be appended to /etc/hosts)
-      - "dockerhost:10.0.75.1"
+      - "docker-host:172.16.0.1"
     ports:
-      - "2222:22"
       - "8080:80"
+    networks:
+      mynet:
+        ipv4_address: 172.16.0.10
     volumes:
       - "./source:/var/www/html"
-    tty: true
+networks:
+  mynet:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.16.0.0/24
+          gateway: 172.16.0.1

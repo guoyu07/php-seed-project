@@ -4,27 +4,18 @@ MAINTAINER toi.xtran <toi.xtran@gmail.com>
 
 RUN DEBIAN_FRONTEND=noninteractive
 
-# Update & upgrade
-RUN apt-get update && \
-    apt-get -y upgrade
-
-#-------------------------------------------------------------------------------
-# Install common packages
-#-------------------------------------------------------------------------------
-RUN apt-get -y install \
-    python \
-    vim \
-    wget \
-    curl  \
-    git-all \
-    supervisor
-
-# Config supervisord
-ADD /root/etc/supervisord.conf /etc/supervisord.conf
-RUN mkdir -p /etc/supervisord.d/
-
 # Add config file
 ADD /root/ /tmp/root/
+
+# Update & upgrade
+RUN apt-get update && apt-get -y upgrade
+
+#-------------------------------------------------------------------------------
+# Service management by supervisor
+#-------------------------------------------------------------------------------
+RUN apt-get -y install supervisor
+ADD /root/etc/supervisord.conf /etc/supervisord.conf
+RUN mkdir -p /etc/supervisord.d/
 
 #-------------------------------------------------------------------------------
 # SSH
@@ -54,21 +45,21 @@ ENV INSTALL_APACHE_PHP ${INSTALL_APACHE_PHP}
 RUN if [ ${INSTALL_APACHE_PHP} = true ]; then \
     apt-get install -y \
         apache2 \
-        php \
-        php-cli \
-        php-gd \
-        php-json \
-        php-mbstring \
-        php-xml \
-        php-xsl \
-        php-zip \
-        php-soap \
+        php7.0 \
+        php7.0-cli \
+        php7.0-gd \
+        php7.0-json \
+        php7.0-mbstring \
+        php7.0-xml \
+        php7.0-xsl \
+        php7.0-zip \
+        php7.0-soap \
         php-pear \
-        php-mcrypt \
-        libapache2-mod-php \
-        php-curl \
-        php-mysql \
-        php-dev \
+        php7.0-mcrypt \
+        libapache2-mod-php7.0 \
+        php7.0-curl \
+        php7.0-mysql \
+        php7.0-dev \
         && \
     # Apache2 config
     mkdir -p /var/lock/apache2 /var/run/apache2 && \
@@ -109,7 +100,7 @@ RUN if [ ${INSTALL_XDEBUG} = true ] && [ ${INSTALL_APACHE_PHP} = true ]; then \
     echo "xdebug.remote_enable = 1" >> $XDEBUGINI_PATH && \
     echo "xdebug.remote_connect_back = 0" >> $XDEBUGINI_PATH && \
     echo "xdebug.remote_port=9000" >> $XDEBUGINI_PATH && \
-    echo "xdebug.remote_host=dockerhost" >> $XDEBUGINI_PATH && \
+    echo "xdebug.remote_host="`/sbin/ip route|awk '/default/ { print $3 }'` >> $XDEBUGINI_PATH && \
     echo "xdebug.idekey = PHPSTORM" >> $XDEBUGINI_PATH \
 ;fi
 
